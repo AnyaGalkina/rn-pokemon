@@ -1,18 +1,23 @@
 import React, {useEffect, useState} from 'react';
 import {Image, Text, View} from 'react-native';
 import {DetailsScreenProps} from '../main/types';
-import {api, Pokemon} from '../../api/api';
+import {useAppDispatch, useAppSelector} from '../../store/store';
+import {clearPokemonState, getPokemonById} from '../../store/rootSlice';
 
 type Nullable<T> =T | null;
 
 export const DetailsScreen = ({route}: DetailsScreenProps) => {
     const {url} = route.params;
-    const [currentPokemon, setCurrentPokemon] = useState<Nullable<Pokemon>>(null);
+    const dispatch = useAppDispatch();
+
+    const currentPokemon = useAppSelector(state => state.root.pokemon)
 
     useEffect(() => {
-        api.getPokemonById(url).then((res) => {
-            setCurrentPokemon(res.data);
-        })
+        dispatch(getPokemonById(url));
+        return () => {
+            dispatch(clearPokemonState());
+        }
+
     }, []);
 
     return (

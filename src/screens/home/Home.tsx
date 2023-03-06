@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {Image, StyleSheet, Text, ListRenderItem, TouchableOpacity, View, FlatList} from 'react-native';
-import {api, Pokemon, PokemonItem} from '../../api/api';
+import React, {useEffect} from 'react';
+import {FlatList, ListRenderItem, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {PokemonItem} from '../../api/api';
 import {NUM_COLUMNS, PADDING, WIDTH} from '../../constants/constants';
 import {useAppNavigation} from '../main/types';
+import {useAppDispatch, useAppSelector} from '../../store/store';
+import {getAllPokemon} from '../../store/rootSlice';
 
-type Item = {
+export type Item = {
     name: string
     icon: string
     id: number
@@ -14,46 +16,51 @@ type Item = {
 
 export const HomeScreen = () => {
     const {navigate} = useAppNavigation();
-    const [allPokemons, setAllPokemons] = useState<Item[]>([]);
+    const allPokemons = useAppSelector(state => state.root.allPokemons);
+    const dispatch = useAppDispatch();
+    // const [allPokemons, setAllPokemons] = useState<Item[]>([]);
 
     useEffect(() => {
-        api.getAllPokemon().then((res) => {
-                res.data.results.forEach(({url}, index) => {
-                    api.getPokemonById(url).then((resp) => {
-                        setAllPokemons((prevState) =>  [...prevState, {
-                            id: resp.data.id,
-                            key: index + 1,
-                            icon: resp.data.sprites.other['official-artwork'].front_default,
-                            name: resp.data.name,
-                            url: url,
-                        } ])
-                    })
-                })
-        })
+        dispatch(getAllPokemon());
+        // api.getAllPokemon().then((res) => {
+        //         res.data.results.forEach(({url}, index) => {
+        //             api.getPokemonById(url).then((resp) => {
+        //                 setAllPokemons((prevState) =>  [...prevState, {
+        //                     id: resp.data.id,
+        //                     key: index + 1,
+        //                     icon: resp.data.sprites.other['official-artwork'].front_default,
+        //                     name: resp.data.name,
+        //                     url: url,
+        //                 } ])
+        //             })
+        //         })
+        // })
     }, []);
 
-    const renderItem: ListRenderItem<Item> = ({item, index}) => {
+    const renderItem: ListRenderItem<PokemonItem> = ({item, index}) => {
 
         return <TouchableOpacity onPress={() => {
             navigate('Details', {url: item.url})
         }}>
             <View style={styles.item}>
                 <Text style={styles.itemText}>{item.name}</Text>
-                <Image
-                    style={{width: 50, height: 50}}
-                    source={{uri: item.icon}}
-                />
+                {/*<Image*/}
+                {/*    style={{width: 50, height: 50}}*/}
+                {/*    source={{uri: item.icon}}*/}
+                {/*/>*/}
             </View>
         </TouchableOpacity>
     }
     return (
         <View style={styles.container}>
-            <FlatList
-                numColumns={NUM_COLUMNS}
-                data={allPokemons}
-                renderItem={renderItem}
-                columnWrapperStyle={{justifyContent: 'space-between'}}
-            />
+            {/*{allPokemons.length &&*/}
+                <FlatList
+                    numColumns={NUM_COLUMNS}
+                    data={allPokemons}
+                    renderItem={renderItem}
+                    columnWrapperStyle={{justifyContent: 'space-between'}}
+                />
+            {/*}*/}
         </View>
     );
 };
